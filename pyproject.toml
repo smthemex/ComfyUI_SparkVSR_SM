@@ -1,0 +1,16 @@
+[project]
+name = "sparkvsr_sm"
+description = "SparkVSR: Interactive Video Super-Resolution via Sparse Keyframe Propagation"
+version = "1.0.0"
+license = {file = "LICENSE"}
+dependencies = ["accelerate>=1.1.1", "transformers>=4.46.2", "diffusers>=0.36.0", "numpy", "sentencepiece>=0.2.0", "SwissArmyTransformer>=0.4.12", "imageio>=2.35.1", "imageio-ffmpeg>=0.5.1", "openai>=1.54.0", "moviepy>=2.0.0", "scikit-video>=1.1.11", "pydantic>=2.10.3", "wandb", "peft", "opencv-python", "decord", "av", "torchdiffeq", "Pillow", "einops", "PyYAML", "requests", "tqdm", "safetensors", "huggingface-hub", "#gradio>=5.5.0"]
+
+[project.urls]
+Repository = "https://github.com/smthemex/ComfyUI_SparkVSR_SM"
+#  Used by Comfy Registry https://registry.comfy.org
+
+[tool.comfy]
+PublisherId = "smthemex"
+DisplayName = "ComfyUI_SparkVSR_SM"
+Icon = ""
+includes = []
