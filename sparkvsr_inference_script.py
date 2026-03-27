@@ -11,7 +11,7 @@ from diffusers import (
     CogVideoXImageToVideoPipeline,
 )
 from diffusers.models import AutoencoderKLCogVideoX, CogVideoXTransformer3DModel
-
+import folder_paths
 from transformers import set_seed
 from typing import Dict, Tuple, List
 from diffusers.models.embeddings import get_3d_rotary_pos_embed
@@ -21,13 +21,13 @@ from tqdm import tqdm
 import os
 import cv2
 from PIL import Image
-
+from .model_loader_utils import tensor2image
 from pathlib import Path
-from .model_loader_utils import  map_0_1_to_neg1_1
+from .model_loader_utils import  map_0_1_to_neg1_1,map_neg1_1_to_0_1
 import imageio.v3 as iio
 from contextlib import contextmanager
 import sys
-
+import time
 # Must import after torch because this can sometimes lead to a nasty segmentation fault, or stack smashing error
 # Very few bug reports but it happens. Look in decord Github issues for more relevant information.
 import decord  # isort:skip
@@ -639,6 +639,7 @@ def process_video_ref_i2v(
 
 def load_sparkvsr_model( args, device):
     # Setup
+    print(f"Loading Model from {args}")
     if args.dtype == "float16":
         dtype = torch.float16
     elif args.dtype == "bfloat16":
@@ -693,7 +694,7 @@ def load_sparkvsr_model( args, device):
     
     return pipe
 
-def per_video_refer(args, video_path,SR_model,sr_image,empty_prompt_path=None,sr_embedding=None):
+def per_video_refer(args, video_path,SR_model,sr_image, save_pisasr=True,empty_prompt_path=None,sr_embedding=None):
     empty_prompt_embedding=torch.load(empty_prompt_path, map_location="cpu",weights_only=False)
     sr_embedding= torch.load(sr_embedding, map_location="cpu",weights_only=False) if  sr_embedding is not None else None
     video, pad_f, pad_h, pad_w, original_shape = preprocess_video_match(video_path, is_match=True) # FHWC-->FCHW
@@ -782,97 +783,17 @@ def per_video_refer(args, video_path,SR_model,sr_image,empty_prompt_path=None,sr
 
     elif args.ref_mode == "pisasr":
         from .finetune.PiSASR.test_pisasr import  infer_pisasr
-        
+        prefiex=time.strftime("%Y%m%d-%H%M%S", time.localtime())
         ref_frames_list = infer_pisasr(SR_model,ref_indices, video_lr,sr_embedding,args.upscale,) #pli list
         ref_frames_list=resize_pli(ref_frames_list,video)
+        if save_pisasr:
+            for img,idx in zip(ref_frames_list,ref_indices):
+                print(f"Saving SR image {idx},img.shape:{img.shape}")
+                img=map_neg1_1_to_0_1(img.unsqueeze(0).permute(0, 2, 3, 1))
+                tensor2image(img).save(os.path.join(folder_paths.get_output_directory(),f"sr_img_indices{idx}_{prefiex}.png"))
 
-        # import tempfile
-        # import subprocess
-        # import shutil
-        # from datetime import datetime
-        # print("Generating PiSA-SR Frames...")
-        # audio_file_prefix = datetime.now().strftime("%y%m%d%H%M%S")[-6:] 
-        # prefix = f"pisasr_{audio_file_prefix}"
-        # pisa_cache_dir = os.path.join(args.output_path, "ref_pisasr_cache", prefix)
-        # os.makedirs(pisa_cache_dir, exist_ok=True)
-        
-        # for idx in ref_indices:
-        #     pisa_frame_path = os.path.join(pisa_cache_dir, f"pisasr_frame_{idx:05d}.png")
-            
-        #     found = False
-        #     if not os.path.exists(pisa_frame_path):
-        #         print(f"Generating PiSA-SR reference for {pisa_cache_dir} frame {idx}...")
-        #         lr_frame = video_lr[idx].cpu().permute(1, 2, 0).numpy() # [H, W, C] in [0, 255]
-        #         with tempfile.TemporaryDirectory() as tmpdir:
-        #             lr_path = os.path.join(tmpdir, "input_frame.png")
-        #             lr_img = Image.fromarray(lr_frame.astype('uint8'))
-        #             lr_img.save(lr_path)
-                    
-        #             out_dir = os.path.join(tmpdir, "out")
-        #             os.makedirs(out_dir, exist_ok=True)
-                    
-        #             if not all([args.pisa_python_executable, args.pisa_script_path, args.pisa_sd_model_path, args.pisa_chkpt_path]):
-        #                 raise ValueError("PiSA-SR mode requires --pisa_python_executable, --pisa_script_path, --pisa_sd_model_path, and --pisa_chkpt_path to be specified.")
-                        
-        #             cmd = [
-        #                 args.pisa_python_executable,
-        #                 args.pisa_script_path,
-        #                 "--input_image", lr_path,
-        #                 "--output_dir", out_dir,
-        #                 "--pretrained_model_path", args.pisa_sd_model_path,
-        #                 "--pretrained_path", args.pisa_chkpt_path,
-        #                 "--upscale", str(args.upscale),
-        #                 "--align_method", "adain",
-        #                 "--lambda_pix", "1.0",
-        #                 "--lambda_sem", "1.0",
-        #             ]
-        #             env = os.environ.copy()
-        #             env["CUDA_VISIBLE_DEVICES"] = str(args.pisa_gpu)
-                    
-        #             pisa_cwd = os.path.dirname(args.pisa_script_path)
-        #             try:
-        #                 subprocess.run(cmd, env=env, check=True, capture_output=True, text=True, cwd=pisa_cwd)
-        #                 out_img_path = os.path.join(out_dir, "input_frame.png")
-        #                 if os.path.exists(out_img_path):
-        #                     shutil.copy(out_img_path, pisa_frame_path)
-        #                     print(f"PiSA-SR generated for {pisa_cache_dir} frame {idx}.")
-        #                 else:
-        #                     print(f"Warning: PiSA-SR output missing for {pisa_cache_dir} frame {idx}!")
-        #             except subprocess.CalledProcessError as e:
-        #                 print(f"PiSA-SR Subprocess failed (exit {e.returncode}): stderr={e.stderr[:500] if e.stderr else 'N/A'}")
-        #             except Exception as e:
-        #                 print(f"PiSA-SR Subprocess error: {e}")
-            
-            # if os.path.exists(pisa_frame_path):
-            #     img = Image.open(pisa_frame_path).convert("RGB")
-            #     t_img = transforms.ToTensor()(img) # [0, 1]
-            #     t_img = t_img * 2.0 - 1.0 # [-1, 1]
-                
-            #     target_h, target_w = video.shape[-2], video.shape[-1]
-                
-            #     orig_h, orig_w = t_img.shape[-2], t_img.shape[-1]
-            #     print(f"[PiSA-SR] Generated HD reference resolution: {orig_w}x{orig_h}")
-            #     print(f"[PiSA-SR] Target generated video resolution: {target_w}x{target_h}")
-                
-            #     if t_img.shape[-2:] != (target_h, target_w):
-            #         t_img = torch.nn.functional.interpolate(
-            #             t_img.unsqueeze(0),
-            #             size=(target_h, target_w),
-            #             mode="bilinear",
-            #             align_corners=False
-            #         ).squeeze(0)
-                    
-            #     final_h, final_w = t_img.shape[-2], t_img.shape[-1]
-            #     print(f"[PiSA-SR] Resized reference resolution: {final_w}x{final_h}")
-                    
-            #     ref_frames_list.append(t_img)
-            #     found = True
-            
-            # if not found:
-            #     print(f"Warning: PiSA-SR frame {idx} not generated. Using LQ frame.")
-            #     ref_frames_list.append(video[0, :, idx])
     elif args.ref_mode == "SRimg_in":
-        ref_frames_list=sr_image
+        ref_frames_list=[map_0_1_to_neg1_1(img) for img in sr_image]
         assert len(sr_image) == len(ref_indices), "Number of SR images must match number of reference indices"
 
     output={
