@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import os
 import argparse
-from .model_loader_utils import  clear_comfyui_cache,tensor2pillist
+from .model_loader_utils import  clear_comfyui_cache,tensor2list
 from .sparkvsr_inference_script import infer_sparkvsr,load_sparkvsr_model,per_video_refer,preprocess_video_match
 from .finetune.PiSASR.test_pisasr import load_pisasr_model,infer_pisasr
 import folder_paths
@@ -59,8 +59,8 @@ class SparkVSR_SM_Model(io.ComfyNode):
             lora_path=lora_path,
             vae_path=vae_path,
             gguf_path=gguf_path,
-            repo=os.path.join(node_cr_path, "CogVideoX1.5-5B-I2V")
-        )
+            repo=os.path.join(node_cr_path, "CogVideoX1.5-5B-I2V"),
+            )
         model=load_sparkvsr_model( args, device)
         return io.NodeOutput(model)
     
@@ -130,6 +130,7 @@ class SparkVSR_SM_PreRefer(io.ComfyNode):
                 io.Int.Input("targe_width", default=0, min=0, max=nodes.MAX_RESOLUTION,step=32,display_mode=io.NumberDisplay.number),
                 io.Int.Input("targe_height", default=0, min=0, max=nodes.MAX_RESOLUTION,step=32,display_mode=io.NumberDisplay.number),
                 io.Int.Input("upscale", default=4, min=1, max=16),
+                io.Boolean.Input("save_pisasr", default=True),
                 io.Model.Input("model",optional=True),
                 io.Image.Input("sr_image",optional=True),
             ],
@@ -138,7 +139,7 @@ class SparkVSR_SM_PreRefer(io.ComfyNode):
                 ],
             )
     @classmethod
-    def execute(cls, image,ref_indices,targe_width,targe_height,upscale,model=None,sr_image=None) -> io.NodeOutput:
+    def execute(cls, image,ref_indices,targe_width,targe_height,upscale,save_pisasr,model=None,sr_image=None) -> io.NodeOutput:
         output_resolution=(targe_height,targe_width)
 
         # F,H,W,C=image.shape
@@ -146,7 +147,8 @@ class SparkVSR_SM_PreRefer(io.ComfyNode):
         ref_mode="no_ref" 
         if sr_image is not None:
             ref_mode="SRimg_in"
-            sr_image=tensor2pillist(sr_image)
+            sr_image=tensor2list(sr_image)
+            sr_image=[i.squeeze(0).permute(2,0,1) for i in sr_image] 
         elif model is not  None:
             ref_mode= "pisasr"
             sr_embedding=os.path.join(node_cr_path,"finetune/sd2_pos_emptyemb_sm_.pt")
@@ -165,7 +167,7 @@ class SparkVSR_SM_PreRefer(io.ComfyNode):
             pisa_gpu=0,
             ref_api_cache_dir="",
             )
-        conds=per_video_refer(args, image,model,sr_image,os.path.join(node_cr_path,"finetune/SparkVSR_pos_sm.pt"),sr_embedding)
+        conds=per_video_refer(args, image,model,sr_image,save_pisasr,os.path.join(node_cr_path,"finetune/SparkVSR_pos_sm.pt"),sr_embedding)
         return io.NodeOutput(conds)
 
 class SparkVSR_SM_SRModel(io.ComfyNode):
@@ -212,58 +214,6 @@ class SparkVSR_SM_SRModel(io.ComfyNode):
         model=load_pisasr_model( args)
         return io.NodeOutput(model)
 
-# class SparkVSR_SM_SaveCond(io.ComfyNode):
-#     @classmethod
-#     def define_schema(cls):
-#         return io.Schema(
-#             node_id="SparkVSR_SM_SaveCond",
-#             display_name="SparkVSR_SM_SaveCond",
-#             category="SparkVSR_SM",
-#             inputs=[
-#                 io.Image.Input("image"),
-#                 io.Model.Input("model",optional=True),  
-#                 io.Conditioning.Input("pos",optional=True),
-#             ],
-#             outputs=[
-#                 io.String.Output(display_name="done"),
-#                 ],
-#             )
-#     @classmethod
-#     def execute(cls,image,model=None, pos=None) -> io.NodeOutput:
-        # if pos is not None:
-        #     default_path=os.path.join(folder_paths.get_output_directory(),"sd2_pos_emptyemb_sm_.pt")
-        #     from transformers import AutoTokenizer, CLIPTextModel
-            
-        #     text_encoder = CLIPTextModel.from_pretrained("D:/Downloads/sd2", subfolder="text_encoder").cuda()
-        #     text_encoder.requires_grad_(False)
-        #     text_encoder.eval()
-        #     tokenizer = AutoTokenizer.from_pretrained('F:/ComfyUI311/ComfyUI/custom_nodes/ComfyUI_SparkVSR_SM/stable-diffusion-2-1-base', subfolder="tokenizer")
-        #     def encode_prompt(prompt_batch,text_encoder,tokenizer):
-        #         """Encode text prompts into embeddings."""
-        #         with torch.no_grad():
-        #             prompt_embeds = [
-        #                 text_encoder(
-        #                     tokenizer(
-        #                         caption, max_length=tokenizer.model_max_length,
-        #                         padding="max_length", truncation=True, return_tensors="pt"
-        #                     ).input_ids.to(text_encoder.device)
-        #                 )[0]
-        #                 for caption in prompt_batch
-        #             ]
-        #         return torch.concat(prompt_embeds, dim=0)
-        #     prompt_batch=[""]
-        #     pos=encode_prompt(prompt_batch,text_encoder,tokenizer)
-        #     print("pos shape:",pos.shape)
-        #     torch.save(pos,default_path)
-        
-        # if model is not None:
-        #     ref_indices=[0,10]
-        #     prompt_embeds=torch.load(os.path.join(node_cr_path,"finetune/sd2_pos_emptyemb_sm_.pt"), map_location="cpu",weights_only=False)
-        #     video, pad_f, pad_h, pad_w, original_shape = preprocess_video_match(image, is_match=True)
-        #     pli_list=infer_pisasr(model,ref_indices, video,prompt_embeds )
-        #     for img,idx in zip(pli_list,ref_indices):
-        #         img.save(os.path.join(folder_paths.get_output_directory(),"sr_img_{}.png".format(idx)))
-        # return io.NodeOutput("done")
     
 class SparkVSR_SM_Extension(ComfyExtension):
     @override
@@ -273,7 +223,6 @@ class SparkVSR_SM_Extension(ComfyExtension):
             SparkVSR_SM_KSampler,
             SparkVSR_SM_PreRefer,
             SparkVSR_SM_SRModel,
-            #SparkVSR_SM_SaveCond,
         ]
 async def comfy_entrypoint() -> SparkVSR_SM_Extension:  # ComfyUI calls this to load your extension and its nodes.
     return SparkVSR_SM_Extension()
