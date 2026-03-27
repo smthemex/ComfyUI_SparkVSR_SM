@@ -59,7 +59,8 @@ class SparkVSR_SM_Model(io.ComfyNode):
             lora_path=lora_path,
             vae_path=vae_path,
             gguf_path=gguf_path,
-            repo=os.path.join(node_cr_path, "CogVideoX1.5-5B-I2V")),
+            repo=os.path.join(node_cr_path, "CogVideoX1.5-5B-I2V")
+        )
         model=load_sparkvsr_model( args, device)
         return io.NodeOutput(model)
     
