@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import os
 import argparse
-from .model_loader_utils import  clear_comfyui_cache,tensor2list
+from .model_loader_utils import  clear_comfyui_cache,tensor2pillist
 from .sparkvsr_inference_script import infer_sparkvsr,load_sparkvsr_model,per_video_refer,preprocess_video_match
 from .finetune.PiSASR.test_pisasr import load_pisasr_model,infer_pisasr
 import folder_paths
@@ -76,10 +76,10 @@ class SparkVSR_SM_KSampler(io.ComfyNode):
                 io.Model.Input("model"),   
                 io.Conditioning.Input("conds"),  
                 io.Int.Input("seed", default=0, min=0, max=MAX_SEED),
-                io.Int.Input("overlap_t", default=8, min=1, max=nodes.MAX_RESOLUTION,),
-                io.Int.Input("chunk_len", default=0, min=0, max=nodes.MAX_RESOLUTION),
-                io.Combo.Input("overlap_hw", options= [[32,32],[64,64],[128,128],[256,256],[512,512]] ),
-                io.Combo.Input("tile_size_hw",options= [[0,0],[8,8],[16,16],[32,32],[64,64]] ),
+                io.Int.Input("overlap_t", default=8, min=0, max=nodes.MAX_RESOLUTION,step=8,),
+                io.Int.Input("chunk_len", default=0, min=0, max=nodes.MAX_RESOLUTION, step=8,),
+                io.Combo.Input("overlap_hw", options= [[32,32],[48,48],[64,64],[96,96]] ),
+                io.Combo.Input("tile_size_hw",options= [[0,0],[48,48],[64,64],[128,128],[256,256],[512,512],[768,768],[1024,1024]] ),
                 io.Int.Input("noise_step", default=0, min=0, max=nodes.MAX_RESOLUTION),
                 io.Int.Input("sr_noise_step", default=399, min=1, max=nodes.MAX_RESOLUTION),
                 io.Float.Input("ref_guidance_scale", default=1.0, min=0.0, max=100.0, step=0.1,),
@@ -147,18 +147,22 @@ class SparkVSR_SM_PreRefer(io.ComfyNode):
         ref_mode="no_ref" 
         if sr_image is not None:
             ref_mode="SRimg_in"
-            sr_image=tensor2list(sr_image)
-            sr_image=[i.squeeze(0).permute(2,0,1) for i in sr_image] 
+            sr_image=tensor2pillist(sr_image)
         elif model is not  None:
             ref_mode= "pisasr"
             sr_embedding=os.path.join(node_cr_path,"finetune/sd2_pos_emptyemb_sm_.pt")
-       
+        if ref_indices:
+            if "," in ref_indices:  
+                ref_indices=[int(i) for i in ref_indices.split(",")] 
+            else:
+                print("ref_indices must be a list of integers separated by commas.输入数列必须以英文符号的逗号分割,如果没有,则使用0帧来处理")
+                ref_indices=[0]
         args = argparse.Namespace(
             upscale=upscale,
             upscale_mode="bilinear",
             output_resolution=None if output_resolution == (0,0) else output_resolution,
             ref_mode=ref_mode,
-            ref_indices=[int(i) for i in ref_indices.split(",")],
+            ref_indices=ref_indices,
             output_path=folder_paths.get_output_directory(),
             pisa_python_executable="",
             pisa_script_path="",
