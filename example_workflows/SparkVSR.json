@@ -1,8 +1,8 @@
 {
   "id": "54086492-483d-45b8-a947-f28b2bdefab5",
   "revision": 0,
-  "last_node_id": 25,
-  "last_link_id": 34,
+  "last_node_id": 33,
+  "last_link_id": 40,
   "nodes": [
     {
       "id": 12,
@@ -16,7 +16,7 @@
         78
       ],
       "flags": {},
-      "order": 7,
+      "order": 14,
       "mode": 0,
       "inputs": [
         {
@@ -56,99 +56,6 @@
       ]
     },
     {
-      "id": 17,
-      "type": "SparkVSR_SM_KSampler",
-      "pos": [
-        22185.631897140716,
-        -1988.5317724334348
-      ],
-      "size": [
-        295.326171875,
-        318
-      ],
-      "flags": {},
-      "order": 6,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "MODEL",
-          "link": 22
-        },
-        {
-          "name": "conds",
-          "type": "CONDITIONING",
-          "link": 23
-        }
-      ],
-      "outputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "links": [
-            21
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "SparkVSR_SM_KSampler"
-      },
-      "widgets_values": [
-        666,
-        "fixed",
-        8,
-        0,
-        [
-          32,
-          32
-        ],
-        [
-          0,
-          0
-        ],
-        0,
-        399,
-        1,
-        true,
-        1
-      ]
-    },
-    {
-      "id": 8,
-      "type": "SparkVSR_SM_Model",
-      "pos": [
-        21806.383738248183,
-        -2100.354875105729
-      ],
-      "size": [
-        270,
-        178
-      ],
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "model",
-          "type": "MODEL",
-          "links": [
-            22
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "SparkVSR_SM_Model"
-      },
-      "widgets_values": [
-        "SparkVSR-S2-F32.safetensors",
-        "none",
-        "CogVideoX1.5-5B-I2V-VAE.safetensors",
-        "none",
-        "bfloat16"
-      ]
-    },
-    {
       "id": 14,
       "type": "Video Slice",
       "pos": [
@@ -160,7 +67,7 @@
         106
       ],
       "flags": {},
-      "order": 3,
+      "order": 8,
       "mode": 0,
       "inputs": [
         {
@@ -188,18 +95,312 @@
       ]
     },
     {
+      "id": 10,
+      "type": "LoadVideo",
+      "pos": [
+        22519.077329630505,
+        -2145.102200596391
+      ],
+      "size": [
+        527.5030588329937,
+        566.8766785590608
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VIDEO",
+          "type": "VIDEO",
+          "links": [
+            14
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadVideo"
+      },
+      "widgets_values": [
+        "hitachi_isee5_001.mp4",
+        "image"
+      ]
+    },
+    {
+      "id": 13,
+      "type": "SaveVideo",
+      "pos": [
+        23070.96210886644,
+        -2147.3268851848347
+      ],
+      "size": [
+        556.8241674251185,
+        572.9637753069292
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 13
+        }
+      ],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": [
+        "video/ComfyUI",
+        "mp4",
+        "h264"
+      ]
+    },
+    {
+      "id": 18,
+      "type": "SparkVSR_SM_PreRefer",
+      "pos": [
+        21851.23024979908,
+        -1852.8729343767338
+      ],
+      "size": [
+        287.3355054622225,
+        194
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 24
+        },
+        {
+          "name": "model",
+          "shape": 7,
+          "type": "MODEL",
+          "link": 34
+        },
+        {
+          "name": "sr_image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 36
+        }
+      ],
+      "outputs": [
+        {
+          "name": "conds",
+          "type": "CONDITIONING",
+          "links": [
+            23
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SparkVSR_SM_PreRefer"
+      },
+      "widgets_values": [
+        " 0, 16, 32",
+        0,
+        0,
+        4,
+        true
+      ]
+    },
+    {
+      "id": 26,
+      "type": "SparkVSR_SM_Model",
+      "pos": [
+        21840.38263031214,
+        -2152.710941727704
+      ],
+      "size": [
+        270,
+        154
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "links": [
+            35
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SparkVSR_SM_Model"
+      },
+      "widgets_values": [
+        "SparkVSR-S2-bf16.safetensors",
+        "none",
+        "CogVideoX1.5-5B-I2V-VAE.safetensors",
+        "none",
+        "bfloat16"
+      ]
+    },
+    {
+      "id": 30,
+      "type": "LoadImage",
+      "pos": [
+        20820.23108929613,
+        -1497.140881875436
+      ],
+      "size": [
+        270,
+        314
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            39
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "sr_img_indices16_20260327-215948.png",
+        "image"
+      ]
+    },
+    {
+      "id": 31,
+      "type": "LoadImage",
+      "pos": [
+        21123.626988133718,
+        -1487.3065661212495
+      ],
+      "size": [
+        270,
+        314
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            40
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "sr_img_indices32_20260327-215948.png",
+        "image"
+      ]
+    },
+    {
+      "id": 29,
+      "type": "LoadImage",
+      "pos": [
+        20811.911259987803,
+        -1862.1355350820513
+      ],
+      "size": [
+        270,
+        314
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            37
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "sr_img_indices0_20260327-215948.png",
+        "image"
+      ]
+    },
+    {
+      "id": 19,
+      "type": "SparkVSR_SM_SRModel",
+      "pos": [
+        20974.880697656205,
+        -2194.456006881027
+      ],
+      "size": [
+        270,
+        154
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 4,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "links": [
+            34
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SparkVSR_SM_SRModel"
+      },
+      "widgets_values": [
+        "sd21fp16.safetensors",
+        "sd21vae.safetensors",
+        "pisa_sr.pkl",
+        "bfloat16"
+      ]
+    },
+    {
       "id": 11,
       "type": "GetVideoComponents",
       "pos": [
-        21566.544165343512,
-        -1938.4280272318485
+        21685.603188178993,
+        -1980.760134332777
       ],
       "size": [
         140,
         66
       ],
       "flags": {},
-      "order": 4,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
@@ -237,150 +438,187 @@
       "widgets_values": []
     },
     {
-      "id": 10,
-      "type": "LoadVideo",
+      "id": 28,
+      "type": "ImageBatch",
       "pos": [
-        22519.077329630505,
-        -2145.102200596391
+        21593.190214605846,
+        -1595.0553756917077
       ],
       "size": [
-        527.5030588329937,
-        566.8766785590608
+        140,
+        46
       ],
       "flags": {},
-      "order": 1,
+      "order": 9,
       "mode": 0,
-      "inputs": [],
+      "inputs": [
+        {
+          "name": "image1",
+          "type": "IMAGE",
+          "link": 39
+        },
+        {
+          "name": "image2",
+          "type": "IMAGE",
+          "link": 40
+        }
+      ],
       "outputs": [
         {
-          "name": "VIDEO",
-          "type": "VIDEO",
+          "name": "IMAGE",
+          "type": "IMAGE",
           "links": [
-            14
+            38
           ]
         }
       ],
       "properties": {
-        "Node name for S&R": "LoadVideo"
+        "Node name for S&R": "ImageBatch"
       },
-      "widgets_values": [
-        "hitachi_isee5_001.mp4",
-        "image"
-      ]
+      "widgets_values": []
     },
     {
-      "id": 13,
-      "type": "SaveVideo",
+      "id": 27,
+      "type": "ImageBatch",
       "pos": [
-        23070.96210886644,
-        -2147.3268851848347
+        21607.74851700997,
+        -1698.9355202851546
       ],
       "size": [
-        556.8241674251185,
-        572.9637753069292
+        140,
+        46
       ],
       "flags": {},
-      "order": 8,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {
-          "name": "video",
-          "type": "VIDEO",
-          "link": 13
+          "name": "image1",
+          "type": "IMAGE",
+          "link": 37
+        },
+        {
+          "name": "image2",
+          "type": "IMAGE",
+          "link": 38
         }
       ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            36
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ImageBatch"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 33,
+      "type": "Note",
+      "pos": [
+        21825.800374655664,
+        -1609.4076784044294
+      ],
+      "size": [
+        313.92164973052786,
+        96.86719193630415
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
       "outputs": [],
       "properties": {},
       "widgets_values": [
-        "video/ComfyUI",
-        "mp4",
-        "h264"
-      ]
+        "目标输出高宽target w 和h 不为0时，upscale 失效"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
     },
     {
-      "id": 18,
-      "type": "SparkVSR_SM_PreRefer",
+      "id": 32,
+      "type": "Note",
       "pos": [
-        21851.23024979908,
-        -1852.8729343767338
+        22170.652461542537,
+        -1609.4381891801424
       ],
       "size": [
-        287.3355054622225,
-        178.66781284910826
+        319.8954568393383,
+        185.72809254015033
       ],
       "flags": {},
-      "order": 5,
+      "order": 7,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": [
+        "ovelap_hw,tile size hw 推荐配置表\n分辨率\t图块大小\t重叠大小\t重叠比例\t适用场景\n≤720p\t256-512\t32-48\t6-12%\t低分辨率视频\n1080p\t512-768\t48-64\t8-12%\t高清视频\n4K\t768-1028 64-96\t8-12%\t超高清视频\n\n注意，tile size hw - ovelap_hw 必须大于0 ，如果 tile size hw 是（0，0） 时，则不分块，对于超高清视频，显存占用很大\n\n"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 17,
+      "type": "SparkVSR_SM_KSampler",
+      "pos": [
+        22185.631897140716,
+        -1988.5317724334348
+      ],
+      "size": [
+        295.326171875,
+        318
+      ],
+      "flags": {},
+      "order": 13,
       "mode": 0,
       "inputs": [
         {
-          "name": "image",
-          "type": "IMAGE",
-          "link": 24
-        },
-        {
           "name": "model",
-          "shape": 7,
           "type": "MODEL",
-          "link": 34
+          "link": 35
         },
-        {
-          "name": "sr_image",
-          "shape": 7,
-          "type": "IMAGE",
-          "link": null
-        }
-      ],
-      "outputs": [
         {
           "name": "conds",
           "type": "CONDITIONING",
-          "links": [
-            23
-          ]
+          "link": 23
         }
       ],
-      "properties": {
-        "Node name for S&R": "SparkVSR_SM_PreRefer"
-      },
-      "widgets_values": [
-        " 0, 16, 32",
-        0,
-        0,
-        4
-      ]
-    },
-    {
-      "id": 19,
-      "type": "SparkVSR_SM_SRModel",
-      "pos": [
-        21574.24500561327,
-        -1608.116483630538
-      ],
-      "size": [
-        270,
-        154
-      ],
-      "flags": {},
-      "order": 2,
-      "mode": 0,
-      "inputs": [],
       "outputs": [
         {
-          "name": "model",
-          "type": "MODEL",
+          "name": "images",
+          "type": "IMAGE",
           "links": [
-            34
+            21
           ]
         }
       ],
       "properties": {
-        "Node name for S&R": "SparkVSR_SM_SRModel"
+        "Node name for S&R": "SparkVSR_SM_KSampler"
       },
       "widgets_values": [
-        "sd21base-f32.safetensors",
-        "sd21vae.safetensors",
-        "pisa_sr.pkl",
-        "bfloat16"
+        666,
+        "fixed",
+        8,
+        0,
+        [
+          32,
+          32
+        ],
+        [
+          0,
+          0
+        ],
+        0,
+        399,
+        1,
+        true,
+        1
       ]
     }
   ],
@@ -426,14 +664,6 @@
       "IMAGE"
     ],
     [
-      22,
-      8,
-      0,
-      17,
-      0,
-      "MODEL"
-    ],
-    [
       23,
       18,
       0,
@@ -464,6 +694,54 @@
       18,
       1,
       "MODEL"
+    ],
+    [
+      35,
+      26,
+      0,
+      17,
+      0,
+      "MODEL"
+    ],
+    [
+      36,
+      27,
+      0,
+      18,
+      2,
+      "IMAGE"
+    ],
+    [
+      37,
+      29,
+      0,
+      27,
+      0,
+      "IMAGE"
+    ],
+    [
+      38,
+      28,
+      0,
+      27,
+      1,
+      "IMAGE"
+    ],
+    [
+      39,
+      30,
+      0,
+      28,
+      0,
+      "IMAGE"
+    ],
+    [
+      40,
+      31,
+      0,
+      28,
+      1,
+      "IMAGE"
     ]
   ],
   "groups": [
@@ -479,15 +757,28 @@
       "color": "#3f789e",
       "font_size": 24,
       "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "Group",
+      "bounding": [
+        20677.74422260179,
+        -2008.9051780730922,
+        739.2637381791537,
+        853.8836484306134
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
     }
   ],
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.8390545288824122,
+      "scale": 0.6047420706576165,
       "offset": [
-        -21371.521516092896,
-        2428.931819463094
+        -20372.49325735906,
+        2606.7836027629874
       ]
     },
     "frontendVersion": "1.41.21",
