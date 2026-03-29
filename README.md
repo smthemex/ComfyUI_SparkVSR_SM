@@ -66,7 +66,7 @@ pip install -r requirements.txt
 
 4.Example
 ----
-![](https://github.com/smthemex/ComfyUI_SparkVSR_SM/blob/main/example_workflows/examp.png)
+![](https://github.com/smthemex/ComfyUI_SparkVSR_SM/blob/main/example_workflows/exampleir.png)
 ![](https://github.com/smthemex/ComfyUI_SparkVSR_SM/blob/main/example_workflows/exampS2.png)
 
 
