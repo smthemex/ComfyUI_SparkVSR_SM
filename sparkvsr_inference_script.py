@@ -794,7 +794,7 @@ def per_video_refer(args, video_path,SR_model,sr_image, save_pisasr=True,empty_p
                 img=map_neg1_1_to_0_1(img.unsqueeze(0).permute(0, 2, 3, 1))
                 tensor2image(img).save(os.path.join(folder_paths.get_output_directory(),f"sr_img_indices{idx}_{prefiex}.png"))
 
-    elif args.ref_mode == "SRimg_in":
+    elif args.ref_mode == "SRimg":
         ref_frames_list==resize_pli(ref_frames_list,video)
         if len(ref_frames_list)>len(ref_indices):
             print(f"[PiSA-SR] WARNING: SR image count ({len(ref_frames_list)}) > ref_indices count ({len(ref_indices)}). Truncating SR images to match ref_indices count.")
