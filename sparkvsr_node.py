@@ -146,7 +146,7 @@ class SparkVSR_SM_PreRefer(io.ComfyNode):
         sr_embedding=None
         ref_mode="no_ref" 
         if sr_image is not None:
-            ref_mode="SRimg_in"
+            ref_mode="SRimg"
             sr_image=tensor2pillist(sr_image)
         elif model is not  None:
             ref_mode= "pisasr"
