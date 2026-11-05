@@ -27,10 +27,7 @@
 
 Update
 -----
-* 修复一些错误，超大视频请按工作流的note来调整tile数值
-
-* Preprocess the image node to connect to the pisa_sr node to load the model, or use other methods to upscale a single-frame image, that is, enable reference image mode; otherwise, it is non-reference image mode.  ref_indices are the sequence frame numbers of the reference image in the source video. For example,' 0, 'is the first frame. You can also input 0 to only reference the first frame to save resources and achieve better results.
-* 预处理图片节点接入pisa_sr 节点加载的模型  或者你用其他方法放大的单帧图片，即开启图模式，否则是非垫图模式，ref_indices是垫图在源视频的序列帧序号，比如0就是首帧，你也可以输入'0,'(注意有逗号) 只参考首帧以节省资源获得更好的效果.
+* 使用comfyUI的核心代码封装此方法,加快推理速度/ Use the core code of ComfyUI to encapsulate this method， speed up the inference speed  
 
 1.Installation  
 -----
@@ -38,41 +35,32 @@ Update
 ```
 git clone https://github.com/smthemex/ComfyUI_SparkVSR_SM
 ```
-2.requirements  
-----
 
-```
-pip install -r requirements.txt
-```
-
-3.checkpoints 
+2.checkpoints 
 ----
-* cog unet merged  or gguf [links](https://huggingface.co/smthem/SparkVSR-GGUF/tree/main) #f32 or bf16  or gguf
-* cog vae [links](https://huggingface.co/JiongzeYu/SparkVSR/tree/main)
-* if use pisa_sr need [stable-diffusion-2-1-base](https://www.modelscope.cn/models/stabilityai/stable-diffusion-2-1-base) vae and unet,and  pisa_sr.pkl[google](https://drive.google.com/drive/folders/1oLetijWNd59xwJE5oU-eXylQBifxWdss)
+* 2.1 SparkVSR unet (comfy int8，bf16or gguf) [links](https://huggingface.co/smthem/SparkVSR-GGUF/tree/main)  
+* 2.2 Cog vae [links](https://huggingface.co/JiongzeYu/SparkVSR/tree/main)  
+* 2.3 if use pisa_sr need [stable-diffusion-2-1-base-vae](https://www.modelscope.cn/models/stabilityai/stable-diffusion-2-1-base) vae and [merger unet](https://huggingface.co/smthem/SparkVSR-GGUF/tree/main)
 
 ```
 ├── ComfyUI/models/
 |     ├── diffusion_models/
-|        ├──sd21base-f32.safetensors  # 3.22G or fb16  if use  pisa_sr to refer image  optional 可选，使用 pisa_sr超分参考图用
-|        ├──SparkVSR-S2-F32.safetensors # 20.7G or fb16
-|     ├── gguf/
-|        ├──SparkVSR-S2-Q8_0.gguf optional 可选，
+|        ├──SparkVSR-S2-int8_convrot-comfy.safetensors # 5.5G or bf16
 |     ├── vae/
 |        ├──CogVideoX1.5-5B-I2V-VAE.safetensors #822M
-|        ├──sd21vae.safetensors # 319M  if use  pisa_sr to refer image  optional 可选，使用 pisa_sr超分参考图用
-|     ├── loras
-|        ├──pisa_sr.pkl # 32M  if use  pisa_sr to refer image optional 可选,使用 pisa_sr超分参考图用
-
+##### optional pisa_sr ######
+|     ├── diffusion_models/
+|        ├──pisa_sr_unet_merged.safetensors # 1.5G
+|     ├── vae/
+|        ├──sd21vae.safetensors 
 ```
 
-4.Example
+3.Example
 ----
-![](https://github.com/smthemex/ComfyUI_SparkVSR_SM/blob/main/example_workflows/exampleir.png)
-![](https://github.com/smthemex/ComfyUI_SparkVSR_SM/blob/main/example_workflows/exampS2.png)
+![](https://github.com/smthemex/ComfyUI_SparkVSR_SM/blob/main/example_workflows/example.png)
 
 
-5.Citation
+4.Citation
 ----
 ```
 @misc{yu2026sparkvsrinteractivevideosuperresolution,
