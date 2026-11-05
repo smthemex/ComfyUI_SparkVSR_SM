@@ -1,2 +1,6 @@
+from .sparkvsr_native.nodes import SparkVSRNativeExtension
+WEB_DIRECTORY = "./web"
 
-from .sparkvsr_node import *
+  
+async def comfy_entrypoint() -> SparkVSRNativeExtension:
+    return SparkVSRNativeExtension()
